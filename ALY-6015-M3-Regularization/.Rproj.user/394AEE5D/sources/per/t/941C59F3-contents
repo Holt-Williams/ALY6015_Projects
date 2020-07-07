@@ -1,0 +1,385 @@
+---
+title: "M2-Williams-Assignments"
+author: "Garland Williams"
+date: "5/26/2020"
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(broom)
+```
+
+# Introduction
+
+The purpose of this report is to practice coding in R and reinforcing statistical tests taught in previous courses. The statistical tests used include one-sample t-test, two-sample t-tests, and F-tests. The project utilizes multiple datasets from the MASS package and the outputs are statistical inferences about the datasets. The project is broken down into sections by the major theme of the section as dictated by the assignment.
+
+
+# Hypothesis Testing Assignment
+
+
+## Load Librairies
+"First, load the MASS library in R, which provides a description of the datasets available in the MASS package." Other packages loaded include printr, tidyverse, and psych for table formatting and visualizations.
+
+```{r lib, echo=TRUE, message=FALSE, warning=FALSE}
+library(MASS)
+library(tidyverse)
+library(printr)
+library(psych)
+```
+
+## One Sample T-test
+
+"Use the chem dataset to answer the question, is the flour production company producing whole meal flour with greater than 1 part per million copper in it?"
+
+```{r chem, echo=TRUE}
+data(chem)
+chem%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+
+```
+
+This dataset contains a sample with 24 entries of "copper in wholemeal flour, in parts per million." The mean value above is 4.28 parts per million of copper. Next a one sample t-test is applied where the mean is tested to see if it is greater than 1 (part per million).
+
+Ho: The mean value is less than or equal to 1 part per million
+
+Ha: The mean value is greater than 1 part per million
+
+alpha = 0.05
+
+```{r chem2, echo=TRUE}
+t.test(chem, mu=1, alternative = "greater")
+```
+
+t: 3.0337
+
+P-value: 0.002952
+
+The result is a p-value of 0.002952, which is less than 0.05. This means we reject the null that the mean equals one and instead go with the alternative hypothesis that the true mean is greater than 1. 
+
+
+## Two Sample T-test
+
+"Use the cats dataset to answer the question, do male and female cat samples have
+ the same body weight?"
+
+```{r cats, echo=TRUE}
+data(cats)
+cats%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+cats$Sex%>%table()
+```
+
+The cats dataset is "the heart and body weights of samples of male and female cats used for digtalis experiments." The dataset only contains infroamtion on adult cats who weigh over 2kg. There are 144 samples with three variables: Sex, Body Weight, and Heart Weight.
+
+Ho: The mean weight of female and male cats is equal
+
+Ha: The mean weight of female and male cats is not equal
+
+alpha = 0.05
+
+```{r cats1.1, echo=TRUE}
+t.test(Bwt~Sex ,  data=cats)
+```
+
+t: -8.7095
+
+P-value: 8.832e-15
+
+Using a two sample t-test where the null is that there is no difference in mean of body weight based on the sex of the cat and the alternative hyptohesis is that the diffrence between the means is not equal to zero. The outcome is a p-value less than 0.05, the 95% confidence interval, which means the null hypothesis is rejected.
+
+## Paired T-test
+
+"Use the shoes dataset to answer the question, did material A wear better than material B?"
+
+
+```{r shoes, echo=TRUE, results = "asis"}
+data(shoes)
+df<-data.frame(c(shoes[1],shoes[2]))
+df%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df<- df%>%gather()
+
+```
+Using the above code, shoes dataset it rearranged for easier computation. This datasets contains "the wear of shoes of materials A and B for one foot each of ten boys." The mean for material A is 10.63, and the mean for material B is 11.040.
+
+Ho: The mean diffrence between the two materials is greater than or equal to zero
+
+Ha: The mean diffrence between the two materials is less than zero
+
+alpha = 0.05
+
+```{r shoes2, echo=TRUE}
+t.test(value~key ,  data=df, paired=TRUE, alternative = "less")
+```
+
+t: -3.3489
+
+P-value: 0.00426
+
+Performing a paired t-test where the null value is the mean diffrence between A and B is greater than or equal to zero and the alternative is the mean difference is less than zero outputs a p-value less than 0.05. A less than zero alternative hypothesis is used due to the initial question of “did material A wear better than B.”  The p-value output means the null hypothesis that the mean is greater than or equal to zero is rejected at the 95% confidence interval.
+
+## Test of equal or given proportions
+
+"Use the bacteria data set to answer the question, did the drug treatment have a significant effect of the presence of the bacteria compared with the placebo?"
+
+
+```{r bacteria, echo=TRUE, results = "asis"}
+data(bacteria)
+table<-bacteria%>%select(y,ap)%>%table()
+colnames(table)<-c("Active", "Placebo")
+rownames(table)<- c("No", "Yes")
+table
+```
+
+The bacteria datasets contains "220 rows" with "tests of the presence of the bacteria H. influenzae in children with otitis media in the Northern Territory of Australia." The above table shows the counts of children with the value Yes or no which indicate the presence of the bacteria, and the treatment type: Active or Placebo.
+
+Ho: There is no diffrence between the proportions of bacteria in the two samples
+
+Ha: There is a diffrence between the proportions of bacteria in the two samples
+
+alpha = 0.05
+
+```{r bacteria2, echo=TRUE}
+prop.test(table[2,], n=c(124,96))
+
+```
+
+P-value: 0.03177
+
+Utilizing a test of equal proportions with null hypothesis that the presence of bacteria is the same for the active and placebo groups while the alternative hypothesis is that the outcomes are not equal, the outputted p-value is 0.031 which is less than 0.05. This means the null hypothesis is rejected at the 95% confidence interval. This would suggest that there is a statistically significant effect on the presence of bacteria when using the active treatment. 
+
+## F-test
+
+"Use the cats data set to test for the variance of the body weight in male and female cats."
+
+```{r cats2, echo=TRUE, results = "asis"}
+data(cats)
+cats%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+```
+
+Ho: There is no diffrence between the variances of the cats by sex
+
+Ha: There is a diffrence between the variances of the cats by sex
+
+alpha = 0.05
+
+```{r cats2.1, echo=TRUE}
+var.test(Bwt~Sex ,  data=cats)
+```
+
+F: 0.3435
+
+P-value: 0.00012
+
+Utilizing an f-test to test if there is a diffrence in the variances of the cats by sex has a p-value less than 0.05. This means the null hypothesis is rejected at a 95% confidence interval, the null hypothesis being that the diffrence is zero, while the alternative hypothesis is that the diffrence is not equal to zero. 
+
+
+## Hypothesis Testing Assignment References
+
+Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
+
+Menzies School of Health Research 1999–2000 Annual Report. p.20. http://www.menzies.edu.au/icms_docs/172302_2000_Annual_report.pdf.
+
+
+
+# Inferrential Statistics Assignment
+
+## Load Libraries
+
+To begin the analysis, relevant libraries are loaded. 
+
+```{r load2, echo=TRUE, message=FALSE, warning=FALSE}
+library(MASS)
+library(tidyverse)
+library(ggthemes)
+library(gridExtra)
+```
+
+## Dataset Selection and Exploratory Analysis
+
+The dataset selected for this assignment is the "cabbages" dataset. To begin the first five rows of the dataset are shown to give an understanding of what the dataset contains.
+
+```{r EDA, echo=TRUE}
+head(cabbages)
+
+```
+
+
+There are four variables in the dataset:
+1. Cult: The cultivar of the cabbage
+2. Date: three seperate dates that the cabbages were planted on
+3. HeadWt: Weight of the cabbage head
+4. Vitc: Absorbic acid content of the cabbage head
+* The specefic units are unknown for all values
+
+```{r EDA1, echo=TRUE}
+cabbages%>%group_by()%>%summarize(n=n())
+```
+
+In all there are 60 records in the dataset with the following counts by cultivar and date
+
+```{r EDA2, echo=TRUE}
+cabbages%>%group_by(Cult)%>%summarize(n=n())
+cabbages%>%group_by(Date)%>%summarize(n=n())
+cabbages%>%select(Cult,Date)%>%table()
+```
+
+The data shows that ten cabbages per cultivar were taken from each date of planning for testing. Next, head weight is analyzed:
+
+
+```{r EDAHeadwt, echo=TRUE}
+
+cabbages$HeadWt%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+a<-cabbages%>%
+  ggplot(aes(HeadWt))+geom_boxplot()+theme_tufte()
+b<-cabbages%>%select(Cult,HeadWt,VitC)%>%
+  ggplot(aes(HeadWt, fill=Cult))+
+  geom_boxplot()+
+  theme_tufte()
+c<-cabbages%>%
+  ggplot(aes(HeadWt, col=Cult))+
+  geom_density()+
+  theme_tufte()
+d<-cabbages%>%
+  ggplot(aes(HeadWt, col=Date))+
+  geom_density()+
+  theme_tufte()
+
+grid.arrange(a,b,d,c,nrow=2)
+
+```
+
+Looking at the density plots, it is easy to see there are diffrences between the cabbages based on cultivar and date. Interestingly, each set of head weight looks to be positvely skewed with a large tail on the right side. Repeating this analysis for Absorbic Acid content, the output is:
+
+```{r EDAVitc, echo=TRUE}
+
+cabbages$VitC%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+a<-cabbages%>%
+  ggplot(aes(VitC))+geom_boxplot()+theme_tufte()
+b<-cabbages%>%select(Cult,HeadWt,VitC)%>%
+  ggplot(aes(VitC, fill=Cult))+
+  geom_boxplot()+
+  theme_tufte()
+c<-cabbages%>%
+  ggplot(aes(VitC, col=Cult))+
+  geom_density()+
+  theme_tufte()
+d<-cabbages%>%
+  ggplot(aes(VitC, col=Date))+
+  geom_density()+
+  theme_tufte()
+
+grid.arrange(a,b,d,c,nrow=2)
+
+```
+
+While the head weight for the cabbage looked to be positevly skewed for all combinations of date and cultivar, the Absorbic Acid content of the cabbage looks to be heavily influenced by the cultivar. The c39 cultivar has a right tailed distribution with a mean around 51, while the c52 looks to be more nornmally distributed with a mean in the 60-70 range. The date has a similar relation where d20 and d16 both are right tailed, while d21 seems to be left tailed when looking at absorbic acid content. 
+
+  The differing distributions lead to an opportunity to perform several types of hypothesis tests which willl be explored in the next section.
+  
+## Hypothesis Testing
+
+In this section hypothesis testing will be used in several ways. The first will be looking at the head weight by the cultivar of the cabbage. This is done by a two sample t-test performed below. The null and alternative hypothesis are:
+
+Ho: The diffrence between the means of the two samples is zero
+
+Ha: The diffrence between the means of the two samples is not zero
+
+Critical value: 2.004
+
+alpha = 0.05
+
+
+```{r ttest1, echo=TRUE}
+#test the diffrences in Cultivar by Headweight
+t.test(HeadWt~Cult ,  data=cabbages)
+```
+
+The results of the t-test are as follows:
+
+t: 2.9209
+
+P-value: 0.004972
+
+The results of the t-test are that we reject the null hypothesis at a 95% confidence interval due to the p-value being less than 0.05 and the t-value being greater than 2.004. This can be interpreted as the two cultivars having statistically significantly diffrent means of head weight.
+
+This test can also be done using absorbic acid content instead of head weight with the following hypothesis and results:
+
+Ho: The diffrence between the means of the two samples is zero
+
+Ha: The diffrence between the means of the two samples is not zero
+
+Critical value: 2.004
+
+alpha = 0.05
+
+
+```{r ttest2, echo=TRUE}
+#test the diffrences in Cultivar by VitC
+t.test(VitC~Cult ,  data=cabbages)
+```
+
+The results of the t-test are as follows:
+
+t: -6.3909
+
+P-value: 3.405e-08
+
+The results of the t-test are that we reject the null hypothesis at a 95% confidence interval due to the p-value being less than 0.05 and the t-value being less than -2.004. This can be interpreted as the two cultivars having statistically significantly diffrent means of absorbic acid content. This can be useful for a business as they can determine if absorbic acid content affects taste then choose a cultivar that better mirrors customer preference. 
+
+Another type of test that be used is the f-test to test the variation in head weight or absorbic acid content by cultivar. First we will perform the F-test on head weight where the null and alternative hypothesis are:
+
+Ho: The variance of the two samples are equal
+
+Ha: The variance of the two samples are not equal
+
+alpha = 0.05
+
+```{r ftest, echo=TRUE}
+#F-test:
+var.test(HeadWt~Cult ,  data=cabbages)
+```
+
+The results of the F-test are as follows:
+
+t: 0.88295
+
+P-value: 0.7397
+
+The results of the F-test are that we do not reject the null hypothesis that the variance between the two samples is zero due to the p-value being greater than 0.05. Repeating the test using Absorbic acid content the outcome is similar with the following test and results. 
+
+
+Ho: The variance of the two samples are equal
+
+Ha: The variance of the two samples are not equal
+
+alpha = 0.05
+
+```{r ftest2, echo=TRUE}
+#F-test:
+var.test(VitC~Cult ,  data=cabbages)
+```
+
+The results of the F-test are as follows:
+
+t: 0.70977
+
+P-value: 0.3613
+
+The results of the F-test are that we do not reject the null hypothesis that the variance between the two samples is zero due to the p-value being greater than 0.05.
+
+# Conclusion
+
+  Overall the hypothesis tests used on the cabbages data set show that the cultivars are statistically diffrent when it comes to head weight and absorbic acid content. The F-test also shows that the variances between the two cultivars is similar, which suggests that a cultivar tends to have the same range of diffrences between its head weight and absoribic acid content. Further hypothesis testing could look at the effect the day of planting had on the cabbages.
+  
+## Inferential Statistics Assignment References
+
+Venables, W. N. and Ripley, B. D. (1999) Modern Applied Statistics with S-PLUS. Third Edition. Springer.
+
+
+
+
+
+

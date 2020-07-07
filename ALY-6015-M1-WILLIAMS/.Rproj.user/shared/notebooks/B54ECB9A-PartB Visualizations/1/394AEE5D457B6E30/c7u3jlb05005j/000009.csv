@@ -1,0 +1,8 @@
+"0",""
+"0","Rubber%>%gather()%>%filter(key==""loss"")%>%"
+"0","  ggplot(aes(sample=log(value)))+"
+"0","  geom_qq()+"
+"0","  labs( title = "" "","
+"0","        subtitle = ""Normal Probability Plots"")+ "
+"0","  xlab(label= NULL)+"
+"0","  ylab(label = ""Count"")"

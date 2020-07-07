@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592077510350.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1868438256",
+    "id" : "B2A11767",
+    "lastKnownWriteTime" : 1592179181,
+    "last_content_update" : 1592179181915,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module4/DataMining/WilliamsM4DataMining.Rmd",
+    "project_path" : "WilliamsM4DataMining.Rmd",
+    "properties" : {
+        "cursorPosition" : "319,96",
+        "last_setup_crc32" : "C69ED2717dfe4677",
+        "scrollLine" : "317",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

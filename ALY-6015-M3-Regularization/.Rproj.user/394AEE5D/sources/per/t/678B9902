@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591026670094.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "132|33|152|0|\n153|25|174|0|\n175|34|198|0|\n224|37|245|0|\n246|36|268|0|\n301|33|414|0|\n",
+    "hash" : "3195622680",
+    "id" : "678B9902",
+    "lastKnownWriteTime" : 1591580911,
+    "last_content_update" : 1591830954058,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module3/AssignmentLASSO/WilliamsM3LASSORegression.Rmd",
+    "project_path" : "WilliamsM3LASSORegression.Rmd",
+    "properties" : {
+        "cursorPosition" : "208,0",
+        "last_setup_crc32" : "",
+        "scrollLine" : "129"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

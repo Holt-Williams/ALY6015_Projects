@@ -1,0 +1,152 @@
+
+
+rm(list=ls())
+while (!is.null(dev.list()))  dev.off() 
+
+
+### You need to embelish these basic codes
+
+## glmnet and lars
+if (is.null(dev.off()==FALSE)) {dev.off()} # close plots
+rm(list=ls()) # wipe environment
+install.packages("lars")
+library(lars)
+
+
+#install.packages("glmnet") # no longer on cran
+# Therefore, download package from CRAN archive
+url <- "https://cran.r-project.org/src/contrib/Archive/glmnet/glmnet_2.0-18.tar.gz"
+pkgFile <- "glmnet_2.0-18.tar.gz"
+download.file(url = url, destfile = pkgFile)
+
+#### install Rtootls35.exe from here: https://cran.r-project.org/bin/windows/Rtools/
+
+### The mac version seems to be available here: https://github.com/rmacoslib/r-macos-rtools
+
+# Install dependencies
+install.packages(c("shape"))
+
+# Install package
+install.packages(pkgs=pkgFile, type="source", repos=NULL)
+
+# Delete package tarball
+unlink(pkgFile)
+
+
+library(glmnet)
+library(lars)
+
+data(diabetes)
+attach(diabetes) # can directly access variable
+head(diabetes)
+View(diabetes)
+summary(diabetes)
+write.csv(diabetes,"see_diabetes.csv") # see the data set in Excel
+
+
+# to pop up charts with zoom, Go to R studio menu bar and Tools->Global options->R Mark down
+# In that phase select "window" and "popup" from that list in the "show output preview in:" then apply
+par(mar=c(1,1,1,1)) # set the margins
+par(mfrow=c(2,5)) # 2 x 5 matrix
+for(i in 1:10){
+  plot(x[,i], y)  # plot 10 regressions on the variables 1 thru 10
+  abline(lm(y~x[,i]))
+}
+
+
+dev.off() # you must close plots before proceeding
+model_ols <- lm(y ~ x) # prefix x.
+summary(model_ols)
+
+model_lasso <- glmnet(x	,  y) # LASSO with 10 variables
+plot.glmnet(model_lasso, xvar = "norm", label = TRUE) # the very small numbers on the right are the variables 1 thru 10
+
+coef(model_lasso)
+
+cv_fit <- cv.glmnet(x=x, y=y, alpha = 1, nlambda = 1000) #cross validate
+plot.cv.glmnet(cv_fit)
+
+cv_fit$lambda.min
+
+fit <- glmnet(x=x, y=y, alpha = 1, lambda=cv_fit$lambda.min)
+fit$beta
+
+cv_fit$lambda.1se
+
+fit <- glmnet(x=x, y=y, alpha = 1, lambda=cv_fit$lambda.1se)
+fit$beta
+
+
+
+
+
+### how to replace X matrix
+library(glmnet)
+data(diabetes)
+attach(diabetes) # can directly access variable
+x                  # see that x is a matrix
+
+attach(mtcars) # attach your data set here
+x <- as.matrix(cbind(mtcars$cyl, mtcars$disp, mtcars$hp))
+y <- as.matrix(mtcars$mpg)
+
+model_ols <- lm(y ~ x) # x prefix works now
+summary(model_ols)
+
+summary(lm(mpg~ cyl+disp+hp)) #exactly similar output by hand
+
+model_lasso <- glmnet(x, y) # LASSO with variables
+plot.glmnet(model_lasso, xvar = "norm", label = TRUE) # the very small numbers on the right are the variables 1 thru 10
+str(model_lasso)
+coef(model_lasso)
+cv_fit <- cv.glmnet(x=x, y=y, alpha = 1, nlambda = 1000) #cross validate
+plot.cv.glmnet(cv_fit)
+cv_fit$lambda.min
+fit <- glmnet(x=x, y=y, alpha = 1, lambda=cv_fit$lambda.min)
+fit$beta
+cv_fit$lambda.1se
+fit <- glmnet(x=x, y=y, alpha = 1, lambda=cv_fit$lambda.1se)
+fit$beta
+
+
+
+## PCA
+
+View(mtcars)
+mycars <-mtcars
+head(mycars)
+carspca<-princomp(mycars[-1]) # conduct PCA on all variables except the first variable
+summary(carspca) # it shows the first component captured 92.73% of the variation
+carspca$loadings
+carspca$scores
+
+mycars$pca <- carspca$scores[,1:2] # merged the first 2 components to the data set
+head(mycars)
+pca_predict1 <- lm(mpg~pca, data=mycars ) # regressed with 2 components
+summary(pca_predict1)
+mycars$yhat <- predict.lm(pca_predict1) # predicted with 2 components
+head(mycars)
+
+
+lm_predict <- lm(mpg~wt+ cyl +disp, data=mycars )
+mycars$yhat2 <- predict.lm(lm_predict) # predicted with 3 regular variables
+head(mycars)
+View(mycars)
+
+
+# suggest making a chart here (possibly the predicted values)
+
+
+# Calculate RMSE, AIC or any suitable metric
+
+
+# Construct confusion matrix
+# https://rdrr.io/cran/caret/man/confusionMatrix.html
+library(caret)
+newPrior <- c(.05, .8, .15) # set up sampling distribution 
+names(newPrior) <- levels(iris$Species) # attach label
+cm_matrix <- confusionMatrix(iris$Species, sample(iris$Species)) # sampling using newPrior
+cm_matrix
+str(cm_matrix)
+
+

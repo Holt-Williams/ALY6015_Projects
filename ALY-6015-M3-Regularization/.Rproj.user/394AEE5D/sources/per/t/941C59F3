@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591561736023.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "34|20|62|0|\n63|20|91|0|\n92|16|121|0|\n",
+    "hash" : "525484666",
+    "id" : "941C59F3",
+    "lastKnownWriteTime" : 1590783813,
+    "last_content_update" : 1591563271122,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module2/WilliamsM2Assignment.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "131,32",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

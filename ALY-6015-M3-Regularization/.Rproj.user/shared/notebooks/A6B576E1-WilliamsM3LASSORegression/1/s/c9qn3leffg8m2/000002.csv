@@ -1,0 +1,4 @@
+"0","mincoef<-tibble(tidy(glm_min$beta))"
+"0","onesecoeff<-tibble(tidy(glm_1se$beta))"
+"0","comparison<-left_join(mincoef[-2],onesecoeff[-2], by='row')"
+"0","comparison%>%mutate_if(is.numeric,round, digits=3)"

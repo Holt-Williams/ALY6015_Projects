@@ -1,0 +1,151 @@
+---
+title: "PartB"
+author: "Garland Williams"
+date: "5/20/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rmarkdown)
+library(scales)
+library(stringr)
+library(ggthemes)
+library(viridis)
+library(hrbrthemes)
+library(printr)
+library(MASS)
+library(ggcorrplot)
+library(gridExtra)
+```
+
+
+
+```{r loading}
+#Load Relevant Libraries and Datasets
+library(MASS)
+library(DAAG)
+library(ggcorrplot)
+data("Rubber")
+data("oddbooks")
+
+```
+
+
+
+```{r rubber, echo=TRUE}
+#Rubber EDA
+
+a<-Rubber%>%gather()%>%filter(key=="loss")%>%
+  ggplot(aes(x=value))+
+  geom_density()+
+  labs( title = " ",
+        subtitle = NULL)+ 
+  xlab(label= "LOSS: Abrasion loss in gm/hr")+
+  ylab(label = NULL)+
+  theme_tufte()
+
+b<-Rubber%>%gather()%>%filter(key=="hard")%>%
+  ggplot(aes(x=value))+
+  geom_density()+
+  labs( title = " ",
+        subtitle = NULL)+ 
+   xlab(label= "hard: Hardness in Shore Units")+
+  ylab(label = NULL)+
+  theme_tufte()
+
+c<-Rubber%>%gather()%>%filter(key=="tens")%>%
+  ggplot(aes(x=value))+
+  geom_density()+
+  labs( title = " ",
+        subtitle = NULL)+ 
+   xlab(label= "tens: Tensile strength in kg/sq m")+
+  ylab(label = NULL)+
+  theme_tufte()
+
+d<-Rubber%>%gather()%>%filter(key=="tens")%>%
+  ggplot(aes(x=log(value)))+
+  geom_density()+
+  labs( title = " ",
+        subtitle = NULL)+ 
+   xlab(label= "log(tens): Tensile strength in kg/sq m")+
+  ylab(label = NULL)+
+  theme_tufte()
+
+grid.arrange(a,b,c,d,nrow=2)
+
+g<- Rubber%>%
+  ggplot(aes(x=hard, y=loss))+
+  geom_point()+
+  geom_smooth(method = "lm", formula = y~x, se=FALSE)+
+  labs( title = " ",
+        subtitle = NULL)+ 
+  xlab(label= "Hard")+
+  ylab(label = "Loss")+
+  theme_tufte()
+  
+h<- Rubber%>%
+  ggplot(aes(x=log(tens), y=loss))+
+  geom_point()+
+  geom_smooth(method = "lm", formula = y~x, se=FALSE)+
+  labs( title = " ",
+        subtitle = NULL)+ 
+    xlab(label= "log(Tens)")+
+    ylab(label = "Loss")+
+    theme_tufte()
+
+i<- Rubber%>%
+  ggplot(aes(x=log(tens), y=hard))+
+  geom_point()+
+  geom_smooth(method = "lm", formula = y~x, se=FALSE)+
+  labs( title = " ",
+        subtitle = NULL)+ 
+    xlab(label= "log(Tens)")+
+    ylab(label = "hard")+
+    theme_tufte()
+
+grid.arrange(g,h, i,nrow=1)
+
+#Model Creation
+RubberModel<- lm(loss~hard + log(tens), data=Rubber)
+summary(RubberModel)
+
+#Correlation plot
+ggcorrplot(round(cor(Rubber),2), lab=TRUE, ggtheme=theme_tufte(),colors = c("Light Blue", "white", "#E46726"))
+```
+
+
+```{r oddbooks, echo=TRUE}
+
+#Oddbooks EDA
+oddbooks%>%gather()%>%
+  ggplot(aes(x=value))+
+  geom_density()+
+  facet_wrap(~key, scales='free')+
+  labs( title = " ",
+        subtitle = "Histograms")+ 
+  xlab(label= NULL)+
+  ylab(label = "Count")+
+  theme_tufte()
+
+oddbooks%>%gather()%>%
+  ggplot(aes(x=log(value)))+
+  geom_density()+
+  facet_wrap(~key, scales='free')+
+  labs( title = " ",
+        subtitle = "Histograms: Logged values")+ 
+  xlab(label= NULL)+
+  ylab(label = NULL)+
+  theme_tufte()
+
+# Model Creation
+oddbooksModel<- lm(oddbooks$weight~ log(oddbooks$thick)+oddbooks$height)
+summary(oddbooksModel)
+
+oddbooksModel<- lm(log(oddbooks$weight)~oddbooks$thick+log(oddbooks$breadth))
+summary(oddbooksModel)
+
+#Correlation plot
+ggcorrplot(round(cor(oddbooks),2), lab=TRUE, ggtheme=theme_tufte(),colors = c("Light Blue", "white", "#E46726"))
+```

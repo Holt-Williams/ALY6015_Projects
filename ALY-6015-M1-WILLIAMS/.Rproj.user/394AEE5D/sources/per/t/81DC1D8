@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590012779334.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2787304311",
+    "id" : "81DC1D8",
+    "lastKnownWriteTime" : 1590069904,
+    "last_content_update" : 1590069904961,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module1/ALY-6015-M1-WILLIAMS/Rlibraries.R",
+    "project_path" : "Rlibraries.R",
+    "properties" : {
+        "cursorPosition" : "11,11",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

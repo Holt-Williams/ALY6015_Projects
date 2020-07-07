@@ -1,0 +1,2 @@
+"0",""
+"0","acf(wine_autoArima$residuals, lag.max=24)"

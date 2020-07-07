@@ -1,0 +1,7 @@
+"0",""
+"0","hour%>%ggplot(aes(fill=yr,y=cnt,x=mnth))+"
+"0","  geom_bar(position=""dodge"", stat=""identity"")+"
+"0","  theme_tufte()+"
+"0","  xlab(""Month"")+"
+"0","  ylab(""Ridership"")"
+"0",""

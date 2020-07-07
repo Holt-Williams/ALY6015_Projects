@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1593295852728.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3049448359",
+    "id" : "5242D8E4",
+    "lastKnownWriteTime" : 1591046339,
+    "last_content_update" : 1591046339,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module3/Sample Week 3 R script (updated 2).R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "143,2",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

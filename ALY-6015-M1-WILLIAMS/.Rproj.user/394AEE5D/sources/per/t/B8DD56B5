@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590067386368.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "186657617",
+    "id" : "B8DD56B5",
+    "lastKnownWriteTime" : 1590347204,
+    "last_content_update" : 1590347204079,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module1/ALY-6015-M1-WILLIAMS/PartB Visualizations.Rmd",
+    "project_path" : "PartB Visualizations.Rmd",
+    "properties" : {
+        "cursorPosition" : "146,22",
+        "last_setup_crc32" : "D131A40032395870",
+        "scrollLine" : "122"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

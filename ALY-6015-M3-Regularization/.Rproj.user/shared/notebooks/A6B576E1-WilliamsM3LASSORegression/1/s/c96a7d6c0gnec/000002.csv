@@ -1,0 +1,3 @@
+"0","set.seed(555)"
+"0","glm_1se<- glmnet(data.matrix(df[c(1:84)]),as.matrix(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1`),family = ""binomial"", lambda=cvglm1$lambda.1se, alpha=1)"
+"0","tidy(glm_1se)"

@@ -1,0 +1,3 @@
+"0",""
+"0","df_seasadj<- df-df_decomp$seasonal"
+"0","plot(df_seasadj, ylab="""",xlab=""Seasonally Adjusted Gas Utilization: 1971-1983"")"

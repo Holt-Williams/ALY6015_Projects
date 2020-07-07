@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592698298928.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3204960373",
+    "id" : "119D9F98",
+    "lastKnownWriteTime" : 1593354160,
+    "last_content_update" : 1593354160644,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/FinalProject/FinalProject/ModelTesting.R",
+    "project_path" : "ModelTesting.R",
+    "properties" : {
+        "cursorPosition" : "141,9",
+        "scrollLine" : "115",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

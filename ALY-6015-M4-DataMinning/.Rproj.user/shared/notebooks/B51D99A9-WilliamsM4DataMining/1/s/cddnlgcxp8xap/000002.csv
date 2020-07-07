@@ -1,0 +1,6 @@
+"0","wine%>%ggplot()+"
+"0","  geom_bar(aes(x=quality, fill=type),color=""black"", position=position_dodge())+"
+"0","  theme_tufte()+"
+"0","  scale_fill_manual(values = c(""red""=""#7D0444"",""white""=""#F6E08C""))+"
+"0","  xlab(""Quality Factor"")+"
+"0","  ylab(NULL)"

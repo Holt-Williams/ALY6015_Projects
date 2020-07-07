@@ -1,0 +1,419 @@
+---
+title: "WilliamsM3LASSORegression"
+author: "G. Holt Williams"
+date: "6/1/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(printr)
+```
+
+# Introduction
+
+The goal of this project is to practice LASSO regularization in the glmnet R package. Areas of practice include utilizng big data, LASSO model fitting, and linear/logistic regression. The project is broken into two parts, first being the "Regularization Assignment" and the second being "LASSO Regression in R Exercises." The first part looks at an insurance company Datset, while the second utilizes an exercise from "r-exercises" and the diabetes dataset to show the fundamentals of LASSO in R. 
+
+
+# Regularizartion Assignment
+
+## Data Set Selection
+
+For this assignment, the analysis will utilize the "Insurance Company Benchmark (COIL 2000) Data Set(Putten 2000)." This dataset has 5,822 rows with about 86 variables which are mostly dummy/factor variables. This dataset was retrieved from UCI's Machine Learning Repository which describes the set as "product usage and socio-demographic data(Putten 2000)." Due to the large quanitity of variables exploratory analysis will only look at the varibles that were found to have the most influence in the LASSO model utilized. This assignment will start with the model, then go into a simple exploratory data analysis section on the variables selected. The response variable for this exercise is if the customer has a mobile home insurance policy.Note: The variables that start with M are zip-coder variables, which likely mean they are information on the maekupe of the zip-code the customer live sin versus direct information on the customer.
+
+### Load Libraries and Datasets
+
+```{r lib2, echo=TRUE, message=FALSE, warning=FALSE}
+library(glmnet)
+library(tidyverse)
+library(broom)
+library(psych)
+library(ggthemes)
+library(gridExtra)
+df<-read.table("ticdata2000.txt", header=FALSE)
+dictionary<-read.csv("dictionary.txt")
+var<- (dictionary$DATA.DICTIONARY[2:87])
+#Change to factors as required
+df$V1<-factor(df$V1)
+df$V4<-factor(df$V4)
+df$V6<-factor(df$V6)
+df$V44<-factor(df$V44)
+df$V86<-factor(df$V86)
+var<-str_sub(var,3)
+var<-gsub(" ","_", var)
+colnames(df)<-var #Add variable names to data frame
+```
+
+```{r nrow, echo=TRUE}
+nrow(df)
+
+```
+The dataset has 5822 rows
+
+```{r summaryResponse, echo=TRUE}
+summary(df[86])
+
+```
+
+The above table shows us the outcome is binary, which lends the model selection towards a logistic lasso model. 
+
+## Model Selection
+
+As shown above, the outcome variable is binary  which lends to the use of a logsitic regression. With that, the regularization technique of LASSO will be utilized to reduce the quanitity of independant variables used in the final model.  The analysis will start with a logistic regression to show us the base case if all variables are included
+
+
+```{r bench2, echo=TRUE, message=FALSE, warning=FALSE}
+bench<-glm(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1` ~ ., data=df, family = "binomial")
+coeff<-as.data.frame(summary(bench)$coef)%>%rownames_to_column()
+tidy(bench)%>%filter(p.value<0.1)%>%mutate_if(is.numeric,round, digits=3)
+```
+
+To reduce page length the full coefficeint breakdown is not included. Only values that are statistically significant at the 90% confidence interval are shown. The variable with the most influence looks to be the number of boat policies. This suggests there is a larger likliehood of not only having  a mobile home, but having an insurance policy for it, if the consumer has a boat policy. 
+  
+  Next, glmnet is run, and only the plotted output is shown. This shows the changes in the coefficients as the model penalizes diffrent variables toward zero. It is important here to set the seed to ensure you are able to reproduce the results later on.
+
+```{r glm2, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(555)
+glm1<-glmnet(as.matrix(df[c(1:84)]),as.matrix(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1`),family = "binomial")
+plot(glm1, label=TRUE)
+```
+
+This plot is useful as it shows where diffrent variables reduce to zero in viusual way, instead of parsing through all the models that were run.
+
+  Next, cross validation is utilized to determine at what lambda the model should be chosen. The model is run with the number of lambdas at 1000.
+
+```{r cvglm2, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(555)
+cvglm1<-cv.glmnet(data.matrix(df[c(1:84)]),as.matrix(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1`),family = "binomial", nlambda=1000, alpha=1)
+plot(cvglm1)
+cvglm1$lambda.min
+cvglm1$lambda.1se
+```
+
+The resulting information is utilized to select the lambda for the glmnet. In the above cross validation run a the lambda that give minimum cvm is 0.00347. The output also give the "1se" lambda (0.0168), which is the value of lambda such that error is within one standard erro of the minimum.  Outputs of both lambdas are below, but the "1se" lambda will be focused on for the EDA.
+
+```{r glmmin2, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(555)
+glm_min<- glmnet(data.matrix(df[c(1:84)]),as.matrix(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1`),family = "binomial", lambda=cvglm1$lambda.min, alpha=1)
+tidy(glm_min)%>%mutate_if(is.numeric,round, digits=3)
+```
+
+```{r glm1se23, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(555)
+glm_1se<- glmnet(data.matrix(df[c(1:84)]),as.matrix(df$`_CARAVAN_Number_of_mobile_home_policies_0_-_1`),family = "binomial", lambda=cvglm1$lambda.1se, alpha=1)
+tidy(glm_1se)%>%mutate_if(is.numeric,round, digits=3)
+```
+
+The diffrence between the two is how large of a penalty is added to the model. This is why the first model has 28 coefficients while the second model has 7.
+
+```{r compare, echo=TRUE, message=FALSE, warning=FALSE}
+mincoef<-tibble(tidy(glm_min$beta))
+onesecoeff<-tibble(tidy(glm_1se$beta))
+comparison<-left_join(mincoef[-2],onesecoeff[-2], by='row')
+comparison%>%mutate_if(is.numeric,round, digits=3)
+```
+
+
+
+
+
+## Input analysis
+
+In this section each of the variables determined by using the value of lambda such that error is within one standard erro of the minimum is explored. This includes:
+
+
+```{r glm1se2, echo=TRUE, message=FALSE, warning=FALSE}
+tidy(glm_1se)%>%select(term)
+```
+
+Lower level education, average income, and purchasing power class all give information "on the distribution of that variable...in the zipcode area of the customer."
+
+## MOPLLAAG Lower Level Education
+
+```{r MOPLLAAG, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_MOPLLAAG_Lower_level_education`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_MOPLLAAG_Lower_level_education`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Lower Level Education")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_MOPLLAAG_Lower_level_education`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Lower Level Education")+
+  labs(color="Mobile Home Policies")
+
+```
+
+As expected from the name of the variable, as the distribution of lower level income in a zip-code increases the liklihood of having an insurance for a mobile home policy decreases. This is the reason the chosen model has an estimate of -0.017, so as this variable increases the model predicts the individual is less likley to have a policy. 
+
+## MINKGEM Average Income
+
+```{r MINKGEM, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_MINKGEM_Average_income`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_MINKGEM_Average_income`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Average Income")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_MINKGEM_Average_income`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Average Income")+
+  labs(color="Mobile Home Policies")
+
+```
+
+Understanding this variable is a little difficult as the data dictionary does not give many clues. It is listed as Average Income which can be interpreted as the percent of the distirubtion of average income in the zipcode area of that customer. Would that make this an estimate of variability of the income in the area? or something elese. None the less, the model shows that as this variable increases, the output is pushed closer to 1.
+
+
+## MKOOPKLA Purchasing power class
+
+```{r MKOOPKLA, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_MKOOPKLA_Purchasing_power_class`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_MKOOPKLA_Purchasing_power_class`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Purchasing Power Class")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_MKOOPKLA_Purchasing_power_class`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Purchasing Power Class")+
+  labs(color="Mobile Home Policies")
+
+
+```
+
+There is not much information to gather from these set of graphs other than zip codes with a higher purchasing power have the capacity to afford a mobile home.  
+
+
+
+## PWAPART Contribution private third party insurance see L4
+
+```{r PWAPART, echo=TRUE, message=FALSE, warning=FALSE}
+
+levels(df$`_PWAPART_Contribution_private_third_party_insurance_see_L4`)<-c("0","1-49","50-99","100-199")
+
+df%>%
+  select(Expenditure =`_PWAPART_Contribution_private_third_party_insurance_see_L4`,Policy = `_CARAVAN_Number_of_mobile_home_policies_0_-_1`)%>%
+  table()
+
+graph<-df%>%
+  ggplot(aes(fill=`_PWAPART_Contribution_private_third_party_insurance_see_L4`,x=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))
+
+graph+
+  geom_bar()+
+  theme_tufte()+
+  xlab("Contribution private third party insurance")+
+  labs(color="Mobile Home Policies")
+
+
+```
+
+This variable hints at an interesting question of what types of consumers buy insurance policy for mobile homes. The cost of owning a mobile home is likely cost prohibitive, and as such low earners who don't have any third party insurance contributions likely can't afford a mobile home. However, on the other end is the high earners who are unlikely to purchase a mobile home due to it not being a high end luxury, but would likely have multiple third party insurance contributions. 
+
+
+## PPERSAUT Contribution car policies
+
+```{r PPERSAUT, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_PPERSAUT_Contribution_car_policies`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_PPERSAUT_Contribution_car_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Contribution car policies")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_PPERSAUT_Contribution_car_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Contribution car policies")+
+  labs(color="Mobile Home Policies")
+```
+
+Interstingly, the density graph shows that some individuals only have a mobile home with a policy, but do not have any car insurance, which suggests they likely live in the home. Another intersting takeaway is that most consumers either have a car for themselves or likely have multiple cars, likely for a family. Other reasosn could be an extra truck for moving the home. 
+
+
+
+## PBRAND Contribution fire policies
+
+```{r PBRAND, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_PBRAND_Contribution_fire_policies`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_PBRAND_Contribution_fire_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Contribution fire policies")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_PBRAND_Contribution_fire_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Contribution fire policies")+
+  labs(color="Mobile Home Policies")
+
+```
+
+Similar to the contribution to car policy variable, the majority of customers who purchase a mobile home insurance policy also have contribution to fire policies. This may be correlated to having additional property with fire insruacne, or maybe mobile homes require fire insurance.
+
+
+
+## APLEZIER Number of boat policies
+
+
+```{r APLEZIER, echo=TRUE, message=FALSE, warning=FALSE}
+df$`_APLEZIER_Number_of_boat_policies`%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+df%>%
+  ggplot(aes(`_APLEZIER_Number_of_boat_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_density()+
+  theme_tufte()+
+  xlab("Number of boat policies")+
+  labs(color="Mobile Home Policies")
+df%>%
+  ggplot(aes(`_APLEZIER_Number_of_boat_policies`,color=`_CARAVAN_Number_of_mobile_home_policies_0_-_1`))+
+  geom_boxplot()+
+  theme_tufte()+
+  xlab("Number of boat policies")+
+  labs(color="Mobile Home Policies")
+
+
+
+```
+
+
+
+This is an interesting variable when it comes to why it was included in the model. This is likely hgihly correlated with a seperate variable that was dropped. In further model iterations this variable should probably be dropped before running as the value this adds is likley little.
+
+
+
+## Refrences
+
+Putten and Someren (eds) . CoIL Challenge 2000: The Insurance Company Case. Published by Sentient Machine Research, Amsterdam. Also a Leiden Institute of Advanced Computer Science Technical Report 2000-09. June 22, 2000.
+
+# LASSO Regression in R Exercises
+
+Source: https://www.r-exercises.com/2017/06/12/lasso-regression-in-r-exercises/
+
+## Exercise 1:
+
+```{r lib, echo=TRUE, message=FALSE, warning=FALSE}
+library(lars)
+library(glmnet)
+data("diabetes")
+attach(diabetes)
+```
+
+## Exercise 2:
+
+
+```{r plots, echo=TRUE}
+for (i in 1:10){
+  plot(x[,i],y, xlab =colnames(x)[i])
+  abline(lm(y~x[,i]))
+}
+```
+
+## Exercise 3:
+
+
+```{r bench, echo=TRUE}
+bench<-lm(y ~ x, data=diabetes)
+class(x)
+summary(bench)
+```
+
+## Exercise 4:
+
+
+```{r glm, echo=TRUE}
+glm1<-glmnet(diabetes$x, diabetes$y)
+summary(glm1)
+plot(glm1)
+glm1$beta
+```
+
+
+
+## Exercise 5:
+
+
+```{r cvglm, echo=TRUE}
+cvglm1<-cv.glmnet(diabetes$x, diabetes$y, alpha=1, nlambda=1000)
+summary(cvglm1)
+plot(cvglm1)
+cvglm1$lambda.min
+```
+
+## Exercise 6:
+
+
+```{r beta, echo=TRUE}
+minValue<- glmnet( diabetes$x, diabetes$y, alpha=1, lambda=cvglm1$lambda.min)
+summary(minValue)
+minValue$beta
+```
+
+
+
+## Exercise 7:
+
+
+```{r highlambda, echo=TRUE}
+cvglm1$lambda.1se
+lambda1SE<- glmnet(diabetes$x, diabetes$y, alpha=1, lambda=cvglm1$lambda.1se)
+summary(lambda1SE)
+lambda1SE$beta
+```
+
+
+## Exercise 8:
+
+
+```{r eight, echo=TRUE}
+second<-lm(y ~ x2, data=diabetes)
+summary(second)
+```
+
+
+
+## Exercise 9:
+
+
+```{r nine, echo=TRUE}
+glm2<-glmnet(x2, y)
+summary(glm2)
+plot(glm2)
+```
+
+
+## Exercise 10:
+
+
+```{r ten1, echo=TRUE}
+cvglm2<-cv.glmnet(x2, y, alpha=1, nlambda=1000)
+summary(cvglm2)
+plot(cvglm2)
+cvglm2$lambda.min
+```
+
+```{r ten2, echo=TRUE}
+minValue2<- glmnet( x2, y, alpha=1, lambda=cvglm2$lambda.min)
+summary(minValue2)
+minValue2$beta
+```
+
+
+
+
+
+
+

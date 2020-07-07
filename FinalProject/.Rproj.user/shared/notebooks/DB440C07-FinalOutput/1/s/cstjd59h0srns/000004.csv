@@ -1,0 +1,7 @@
+"0",""
+"0","hour%>%group_by(yr,mnth)%>%summarise(cnt=mean(cnt))%>%ungroup%>%ggplot(aes(x=mnth,y=cnt))+"
+"0","  geom_line()+"
+"0","  geom_point(aes(color=yr))+"
+"0","  theme_tufte()+"
+"0","  xlab(""Month"")+"
+"0","  ylab(""Ridership"")"

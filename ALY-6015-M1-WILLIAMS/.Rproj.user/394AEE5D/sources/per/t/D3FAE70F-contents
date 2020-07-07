@@ -1,0 +1,125 @@
+---
+title: "PartA"
+author: "Garland Williams"
+date: "5/20/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rmarkdown)
+library(scales)
+library(stringr)
+library(ggridges)
+library(viridis)
+library(hrbrthemes)
+library(printr)
+library(ggthemes)
+
+```
+
+# 1. Invoke R and use the “Tree” dataset
+#Dataset
+data("trees")
+# 2. Find the 5 summary numbers in the data
+summary(trees)
+
+
+```{r 5summary}
+knitr::kable(summary(trees))
+```
+
+
+## 3. Graph a straight line regression
+
+```{r 3, echo=TRUE}
+trees%>%
+  ggplot(aes(Girth,Height))+
+  geom_point()+
+  geom_smooth(method = "lm", formula = y~x, se=FALSE)+
+  labs( title = "Trees Data Set: ",
+  subtitle = "Height Vs Girth")+ 
+  xlab(label= "Height (ft)")+
+  ylab(label = "Girth (IN)")+
+  theme_tufte()
+
+
+trees%>%
+  ggplot(aes(Volume,Height))+
+  geom_point()+
+  geom_smooth(method = "lm", formula = y~x, se=FALSE)+
+  labs( title = "Trees Data Set: ",
+  subtitle = "Height Vs Volume")+ 
+  xlab(label= "Height (ft)")+
+  ylab(label = "Volume (cubic ft)")+
+  theme_tufte()
+
+```
+
+## 4. Create Histograms and density plots
+
+```{r 4, echo=TRUE}
+#histogram
+trees%>%gather()%>%
+  ggplot(aes(value))+
+  geom_histogram(bins=10)+
+  facet_wrap(~key, scales='free')+
+  labs( title = "Trees Data Set: ",
+        subtitle = "Histograms: Bins=10")+ 
+  xlab(label= NULL)+
+  ylab(label = "Count")+
+  theme_tufte()
+
+
+#density Plot
+trees%>%gather()%>%
+  ggplot(aes(value))+
+  geom_density()+
+  facet_wrap(~key, scales='free')+
+  labs( title = "Trees Data Set: ",
+        subtitle = "Density plots")+ 
+  xlab(label= NULL)+
+  ylab(label = "Count")+
+  theme_tufte()
+
+```
+
+
+## 5. Create Boxplots
+
+```{r 5, echo=TRUE}
+
+#boxplots
+trees%>%gather()%>%
+  ggplot(aes(value))+
+  geom_boxplot()+coord_flip()+
+  facet_wrap(~key, scales='free')+
+  labs( title = "Trees Data Set: ",
+        subtitle = "Boxplots")+ 
+  xlab(label= NULL)+
+  ylab(label = "Count")+
+  theme_tufte()
+
+```
+
+
+## 6. Normal probability plots
+
+```{r 6, echo=TRUE}
+
+# 6. Normal probability plots
+
+trees%>%gather()%>%
+  ggplot(aes(sample=value))+
+  geom_qq()+
+  facet_wrap(~key, scales='free')+
+  labs( title = "Trees Data Set: ",
+        subtitle = "Normal Probability Plots")+ 
+  xlab(label= NULL)+
+  ylab(label = "Count")+
+  theme_tufte()
+
+```
+
+

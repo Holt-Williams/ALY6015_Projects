@@ -1,0 +1,4 @@
+"0","df<-wine"
+"0","df$pca1<-winePCA$scores[,1]"
+"0","df$pca2<-winePCA$scores[,2]"
+"0","df$pca3<-winePCA$scores[,3]"

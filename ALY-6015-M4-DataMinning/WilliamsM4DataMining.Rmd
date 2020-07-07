@@ -1,0 +1,384 @@
+---
+title: "Data Mining"
+author: "G. Holt Williams"
+date: "6/10/2020"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+library(tidyverse)
+library(broom)
+library(psych)
+library(ggthemes)
+library(gridExtra)
+library(printr)
+library(dplyr)
+```
+
+# Introduction
+
+The purpose of this report is to practice data minning techniques in R, including classifying and clustering methods. The project is broken down into two main sections. The first being an exploratory analysis of the data set chosen, then followed by data minning of the dataset
+
+
+# Data Minning Assignment
+
+
+## Load Librairies
+
+To begin the analysis the requisite packages need to be loaded into the workspace.
+
+```{r lib_0, echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(printr)
+library(psych)
+library(ggcorrplot)
+```
+
+## Data Processing
+
+Next the chosen dataset needs to be loaded. For this assignment the UCI Machien Learning Repository's Wine Quality data set was chosen (http://archive.ics.uci.edu/ml/datasets/Wine+Quality). This dataset was chosen for its large sample size and due to the preprocessing UCI applies to limit additional cleaning steps. The code to load the dataset and clean it is as follows:
+
+```{r LoadandClean, echo=TRUE, message=FALSE, warning=FALSE}
+# load data Set
+red<-read.csv("winequality-red.csv", sep=";")
+white<-read.csv("winequality-white.csv", sep=";")
+## Add type variable
+red$type<-"red"
+white$type<-"white"
+#Combine
+wine<-rbind(red,white)
+wine$type<-as.factor(wine$type)
+table(wine$quality)
+## Make Quality Factor
+wine$qualityFact<-as.factor(wine$quality)
+wine$qualityFact<-fct_collapse(wine$qualityFact, Bad = c("3", "4"), Med = c("5","6","7"), Great=c("8","9"))
+table(wine$qualityFact)
+table(wine$quality)
+```
+
+The above code adds two variables to the dataset: type and quality as a factor. Type is just if the wine is red or white, while quality as a factor categorizes the quality rankings into 3 sets: Bad, Medium, and Good. This will be useful for the prediction capability later in the assignment. 
+
+## Tables and Plots
+
+```{r table_0, echo=TRUE}
+wine%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)
+```
+
+Each of these variables, except quality, are the inherent characteristics of the wine gatherred through scientific tests. The quality variable is an average of a panel of experts rating the wine. There are a total of 6497 wines in the dataset, broken down into 1599 red wines and 4898 white wines.  Below is a plot to show the correlation of each variable. 
+
+```{r graph_0, echo=TRUE}
+ggcorrplot(round(cor(wine[1:12]),2), ggtheme=theme_tufte(),colors = c("#F6E08C", "white", "#7D0444"))
+```
+
+Many of the independant variables here are correlated, but interstingly only alcohol has a higher than average correlation with quality at 0.44. Some other noteworthy points is the interaction of density, residual sugar, and alcohol (content). As alcohol goes down, the residual sugar increases,a dn density increases. This mimics a simple understanding of the wine making process of yeast eating the sugar to produce alcohol and making it less dense. Because this assignment looks partially at prediction by segmentign the data into test and train, correlated variables will not be removed. If instead the outcome was to intrepret the model, it would make sense to remove highly correlated variables.
+
+
+```{r table1, echo=TRUE}
+table(wine$type,wine$qualityFact)
+```
+
+```{r table, echo=TRUE}
+wine%>%ggplot()+
+  geom_bar(aes(x=quality, fill=type),color="black", position=position_dodge())+
+  theme_tufte()+
+  scale_fill_manual(values = c("red"="#7D0444","white"="#F6E08C"))+
+  xlab("Quality Factor")+
+  ylab(NULL)
+```
+
+Here we can see the majority of quality ratings are between 5 and 7 under the Medium category, and this holds true for both red and white wines.
+
+
+## Data Minning
+
+
+```{r lib_1, echo=TRUE, message=FALSE, warning=FALSE}
+library(factoextra)
+library(NbClust)
+library(party)
+library(fpc)
+```
+
+### Classification
+
+First data mining technique employed is classification, where the outcome is to try and classify the dataset as either Red or White wine. Both the quality and quality factor variable have been removed as they would be considerred outcome variables, and in testing had no outcome in the predictions. The dataset has been split into both training and testing to practice prediction using decision trees.
+
+```{r DecisionTree, echo=TRUE}
+
+set.seed(1234)
+ind <- sample(2, nrow(wine), replace=T, prob=c(0.7, 0.3))
+wine.train <- wine[ind==1,-c(12,14)]
+wine.test <- wine[ind==2, -c(12,14)]
+
+wine.form<- type ~ .
+wine.ctree <- ctree(wine.form,data=wine.train)
+plot(wine.ctree)
+
+```
+
+Next, the model developed above is used to predict the test set type of wine . 
+
+```{r DecisionTree_pred, echo=TRUE}
+pred<- predict(wine.ctree, newdata=wine.test)
+table(pred, wine.test$type)
+```
+
+Overall, the model was rather succesful only failing to correctly classify 46 of 1918 total predictions to the correct wine type. 
+
+Retrying the analysis to predict the quality factor variable using the data_split function from tidymodels to stratify the sample across the quality factor variable produces the following prediction results.
+
+```{r DecisionTree_qf, echo=TRUE}
+library(tidymodels)
+set.seed(1234)
+data_split <- initial_split(wine[-c(12,13)], strat=qualityFact)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+wine.formqf<- qualityFact ~ .
+wine.ctreeqf <- ctree(wine.formqf,data=train_data)
+pred<- predict(wine.ctreeqf, newdata=test_data)
+table(pred, test_data$qualityFact)
+
+```
+
+Overall, the outcome is not very predictive and suggests the issue is that the majority of the expert's opinions on the wine is that they are average.  The small percentage of Great and Bad reviews is creating difficulties in predicting those values. This may be due to the actual quality being based on interactions of the independant variables, versus the variables themselves.
+
+
+### Kmeans Clustering
+
+
+```{r Kmeans_ty, echo=TRUE}
+set.seed(1234)
+wine2<- wine[,c(1:11,13)]
+wine2$type<- NULL
+
+wine.kmeans<- kmeans(wine2,2)
+table(wine$type, wine.kmeans$cluster)
+
+```
+
+Unlike the classification model, the kmeans model of clustering is not particularly predictive for the type of wine. It groups the majority of the red wines in group one, but it also includes 26% of the white wines in group one. Group two contains 97% white wines in its grouping. Retrying the analysis on both quality and quality factor both produce similar results to the classification model above, with little to no useful groupings of quality.
+
+```{r Kmeans_q_and_QF, echo=TRUE}
+## Kmeans QualityFact
+wine_qf<- wine[,c(1:11,14)]
+wine_qf$qualityFact<- NULL
+wine.kmeansqf<- kmeans(wine_qf,3)
+table(wine$qualityFact, wine.kmeansqf$cluster)
+
+## Kmeans Quality
+wine_q<- wine[,c(1:12)]
+wine_q$quality<- NULL
+wine.kmeansq<- kmeans(wine_q,7)
+table(wine$quality, wine.kmeansq$cluster)
+```
+
+This continues to suggest that transformations of variables or interaction variables might be useful for this type of prediction.
+
+
+### Density Based Clustering
+
+This section utilizes a density based clustering model to try and predict the same three variables. 
+
+
+```{r dbc, echo=TRUE, warning=FALSE}
+## Density Based Clustering
+library(fpc)
+library(dbscan)
+# Group Type
+wine3<- wine[,c(1:12)]
+ds<- dbscan(wine3, eps=20, MinPts = 800)
+table(ds$cluster, wine$type)
+```
+
+Using a density based clustering leads to an intersting breakdown of clustering. It clusters the majority of red wines in group one with few white wines, and it groups the majority of white wines in group two. With further optimization it might be possible to increase the clustering saught after. 
+
+```{r dbc_plot, echo=TRUE}
+## Density Based Clustering
+fviz_cluster(ds, data = wine3, stand = FALSE,
+             ellipse = FALSE, show.clust.cent = FALSE,
+             geom = "point",palette = "jco", ggtheme = theme_classic())
+```
+
+Visually this shows all of group one on the right side in blue with group two being just to the left in yellow. This suggests that manipulating where the two groups are touching might produce more optimal results. Quality and Quality Factor are not included as the density clustering did not produce any results that were accurate, even after changing parameters of dbscan to try and optimize the clustering.
+
+
+## PCA and Clustering
+
+The poor prediction capabilites of the above sections is most likely due to the interactions of the variables having the most influence on the ratings of the reviewers. To try and rememdy that a Principal Component Analysis will be used along with the decision tree, kmeans, and density clustering data minning techniques. To shorten the length of the final product limited output and discussion will be had unless noteworthy predictions occur.
+### PCA Code
+
+
+```{r PCA, echo=TRUE}
+set.seed(1234)
+winePCA<-princomp(wine[c(1:11)])
+summary(winePCA)
+fviz_contrib(winePCA,choice="var", axes=1:2)
+df<-wine
+df$pca1<-winePCA$scores[,1]
+df$pca2<-winePCA$scores[,2]
+df$pca3<-winePCA$scores[,3]
+```
+
+This graph shows that the majority of variance comes from the total.sulfur.dioxide variable.
+
+### PCA Decision Tree
+
+
+```{r PCA_DT, echo=TRUE}
+set.seed(1234)
+ind <- sample(2, nrow(df), replace=T, prob=c(0.7, 0.3))
+wine.train_pca <- df[ind==1,-c(12,14)]
+wine.test_pca <- df[ind==2, -c(12,14)]
+wine.form_pca<- type ~ total.sulfur.dioxide
+wine.ctree_pca <- ctree(wine.form_pca,data=wine.train_pca)
+pred_pca<- predict(wine.ctree_pca, newdata=wine.test_pca)
+table(pred_pca, wine.test_pca$type)
+```
+
+Interrestingly, the prediction just using Total Sulfur Dioxide is really close to the previous decision tree model.
+
+```{r PCA_DT2, echo=TRUE}
+set.seed(1234)
+ind <- sample(2, nrow(df), replace=T, prob=c(0.7, 0.3))
+wine.train_pca <- df[ind==1,-c(7,12,14,15,16,17)]
+wine.test_pca <- df[ind==2, -c(7,12,14,15,16,17)]
+wine.form_pca<- type ~  . 
+wine.ctree_pca <- ctree(wine.form_pca,data=wine.train_pca)
+pred_pca<- predict(wine.ctree_pca, newdata=wine.test_pca)
+table(pred_pca, wine.test_pca$type)
+```
+
+When running the model without this variable the predictions are more accurate than either of the two previous decision tree models
+
+```{r PCA_DT22, echo=TRUE}
+set.seed(1234)
+ind <- sample(2, nrow(df), replace=T, prob=c(0.7, 0.3))
+wine.train_pca <- df[ind==1,-c(7,13,12,15,16,17)]
+wine.test_pca <- df[ind==2, -c(7,13,12,15,16,17)]
+wine.form_pca<- qualityFact ~  . 
+wine.ctree_pca <- ctree(wine.form_pca,data=wine.train_pca)
+pred_pca<- predict(wine.ctree_pca, newdata=wine.test_pca)
+table(pred_pca, wine.test_pca$qualityFact)
+```
+
+Although predictions were better for the type of wine, predicting quality factor is still a challenge.
+
+
+
+### PCA Kmeans
+
+
+```{r Kmeans_ty_pca, echo=TRUE}
+set.seed(1234)
+wine_pca<- df[,c(1:6,8:11,13)]
+wine_pca$type<- NULL
+wine.kmeans<- kmeans(wine_pca,2)
+table(wine$type, wine.kmeans$cluster)
+```
+
+Removing total sulfur dioxide did not produce any more optimal results and suggests the data may have an extra dimension that is not contained in the dataset. Running Kmeans with the same variables produces similar results to before and it is likley that reviewer's personal taste is highly subjective and its unlikely to be predicted.
+
+
+```{r Kmeans_q_and_QF_PCA, echo=TRUE}
+## Kmeans QualityFact
+set.seed(1234)
+wine_qf<- df[,c(1:6,8:11,14)]
+wine_qf$qualityFact<- NULL
+wine.kmeansqf<- kmeans(wine_qf,3)
+table(wine$qualityFact, wine.kmeansqf$cluster)
+
+## Kmeans Quality
+wine_q<- df[,c(1:6,8:11,12)]
+wine_q$quality<- NULL
+wine.kmeansq<- kmeans(wine_q,7)
+table(wine$quality, wine.kmeansq$cluster)
+```
+
+
+
+
+
+```{r dbc_PCA, echo=TRUE, warning=FALSE}
+# Group Type
+wine3<- df[,c(12,15:17)]
+ds<- dbscan(wine3, eps=10, MinPts = 320)
+table(ds$cluster, wine$type)
+
+fviz_cluster(ds, data = wine3, stand = FALSE,
+             ellipse = FALSE, show.clust.cent = FALSE,
+             geom = "point",palette = "jco", ggtheme = theme_classic())
+dbscan::kNNdistplot(wine3, k =  5)
+abline(h = 10, lty = 2)
+```
+
+
+Using the PCA components the density clustering model has simialr outputs to the previous models.
+
+To further test the large influence of total sulfur dioxide, the next section removes it from the PCA code to test if that alters the predictive capability
+
+```{r PCA2, echo=TRUE}
+set.seed(1234)
+winePCA<-princomp(wine[c(1:3,5,8:11)])
+summary(winePCA)
+fviz_contrib(winePCA,choice="var", axes=1:2)
+df2<-wine[c(1:3,5,8:11,13)]
+df2$pca1<-winePCA$scores[,1]
+df2$pca2<-winePCA$scores[,2]
+df2$pca3<-winePCA$scores[,3]
+colnames(df2)
+# Decision tree
+set.seed(1234)
+ind <- sample(2, nrow(df2), replace=T, prob=c(0.7, 0.3))
+wine.train_pca <- df2[ind==1,-c(1:8)]
+wine.test_pca <- df2[ind==2, -c(1:8)]
+wine.form_pca<- type ~ .
+wine.ctree_pca <- ctree(wine.form_pca,data=wine.train_pca)
+pred_pca<- predict(wine.ctree_pca, newdata=wine.test_pca)
+table(pred_pca, wine.test_pca$type)
+
+# Kmeans
+wine_pca<- df2[,c(9:12)]
+wine_pca$type<- NULL
+wine.kmeans<- kmeans(wine_pca,2)
+table(wine$type, wine.kmeans$cluster)
+
+# Density
+wine3<- df2[,c(10:12)]
+ds<- dbscan(wine3, eps=0.5, MinPts = 400)
+table(ds$cluster, wine$type)
+
+```
+
+Similar results were found as the previous models.
+
+
+## Conclusion
+
+When using data minning techniques to predict the type of wine, the decision tree and kmeans methods were relatively succesful. This was not the case for the density based clustering used. When trying to predict quality or quality as a factor, every model was unsuccesful at sussing out a pattern for the values on either end of the scale as it would label almsot all values in the 5 to 7 or medium range of quality values. Using PCA to remove variables or using the components it outputs did not improve results.
+
+
+
+
+### References
+
+
+
+P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. Modeling wine preferences by data mining from physicochemical properties. In Decision Support Systems, Elsevier, 47(4):547-553, 2009.
+
+
+
+
+
+
+
+
+
+
+
+
+

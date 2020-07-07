@@ -1,0 +1,3 @@
+"0","test %>% "
+"0","  mutate(tidy = map(season_model, broom::tidy)) %>% "
+"0","  unnest(tidy, .drop = TRUE)%>%select(term,estimate, p.value)"

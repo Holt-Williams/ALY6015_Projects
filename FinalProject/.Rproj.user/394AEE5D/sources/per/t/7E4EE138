@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592766376134.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "690764932",
+    "id" : "7E4EE138",
+    "lastKnownWriteTime" : 1592769695,
+    "last_content_update" : 1592769695359,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/FinalProject/FinalProject/TimeSeriesGraphs.R",
+    "project_path" : "TimeSeriesGraphs.R",
+    "properties" : {
+        "cursorPosition" : "38,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

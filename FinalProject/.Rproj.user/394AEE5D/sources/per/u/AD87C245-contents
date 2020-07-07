@@ -1,0 +1,9 @@
+#### Jsut combien all time with weather
+
+Casual<-long[c(3:16)]%>%filter(Type=="Casual")
+model<- lm(Count~. , data=Casual[c(1:12,14)])
+tidy(model)
+glance(model)
+
+step<-stats::step(lm(Count~ . , data=Casual[c(1:12,14)]),direction="both")
+glance(step)

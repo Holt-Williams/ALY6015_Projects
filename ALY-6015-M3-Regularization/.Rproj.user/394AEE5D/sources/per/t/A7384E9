@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591026673578.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1116272455",
+    "id" : "A7384E9",
+    "lastKnownWriteTime" : 1591394699,
+    "last_content_update" : 1591394699336,
+    "path" : "~/NorthEastern/NorthEasternCLASSES/ALY 6015/Module3/AssignmentLASSO/RegularizationASSIGNMENT.R",
+    "project_path" : "RegularizationASSIGNMENT.R",
+    "properties" : {
+        "cursorPosition" : "32,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

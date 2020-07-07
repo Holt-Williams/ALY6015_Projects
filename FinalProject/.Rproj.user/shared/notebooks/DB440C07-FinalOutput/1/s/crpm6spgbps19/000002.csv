@@ -1,0 +1,8 @@
+"0","long%>%"
+"0","  group_by(Type,dteday)%>%"
+"0","  mutate(sum=sum(Count))%>%"
+"0","  ggplot(aes(x=dteday,y=sum, color=Type))+"
+"0","  geom_point(aes(shape=season))+stat_smooth()+ "
+"0","  theme_fivethirtyeight()+"
+"0","  xlab(""Time"")+"
+"0","  ylab(""Ridership"")+ggtitle(""Riderhsip: 2011-2012"")"

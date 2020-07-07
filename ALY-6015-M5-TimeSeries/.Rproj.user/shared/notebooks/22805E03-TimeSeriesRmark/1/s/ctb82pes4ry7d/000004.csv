@@ -1,0 +1,17 @@
+"0","Utilities <- subset(tsdl,""Utilities"") #"
+"0","Utilities[1]"
+"1","Time Series Data Library: 1 Utilities time series with frequency 12"
+"1"," "
+"1","
+
+"
+"1","           Frequency
+"
+"1","Subject    "
+"1"," 12"
+"1","
+  Utilities"
+"1","  1"
+"1","
+"
+"0","df<-Utilities[[1]]"

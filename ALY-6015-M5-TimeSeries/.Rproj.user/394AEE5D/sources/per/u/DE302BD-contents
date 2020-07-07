@@ -1,0 +1,36 @@
+
+
+### Time Series of Wine Sales
+
+data("wineind")
+df<-wineind
+
+plot.ts(df)
+autoplot(df)+theme_tufte()
+
+## Trying Log
+plot.ts(log(df))
+autoplot(log(df))+theme_tufte()
+
+# Decomp Seasonal
+wine_decomp<-decompose(df)
+
+plot(wine_decomp)
+autoplot(wine_decomp)
+
+
+### SeASONALLY aDJUST DATA
+
+wine_seasadj<- df-wine_decomp$seasonal
+
+plot(df)
+plot(wine_seasadj)
+autoplot(wine_seasadj)
+## Now it contains just the trend component and and irregular component
+
+
+
+
+
+
+

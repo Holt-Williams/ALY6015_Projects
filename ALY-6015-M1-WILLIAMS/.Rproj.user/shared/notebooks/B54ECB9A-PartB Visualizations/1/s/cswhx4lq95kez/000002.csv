@@ -1,0 +1,15 @@
+"0","library(MASS)
+library(DAAG)
+"
+"2","package ‘DAAG’ was built under R version 3.6.3"
+"2","Loading required package: lattice
+"
+"2","
+Attaching package: ‘DAAG’
+
+"
+"2","The following object is masked from ‘package:MASS’:
+
+    hills
+
+"

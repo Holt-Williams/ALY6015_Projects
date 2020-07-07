@@ -1,0 +1,5 @@
+"0","data(cats)"
+"2","data set ‘cats’ not found"
+"0","cats%>%describe(quant=c(.25,.75),omit=TRUE)%>%select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)"
+"2","Error in eval(lhs, parent, parent) : object 'cats' not found
+"

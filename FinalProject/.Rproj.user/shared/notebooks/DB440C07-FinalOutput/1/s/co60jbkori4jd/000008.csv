@@ -1,5 +1,0 @@
-"0",""
-"0","Total_tbats<-tbats(Total_ts)"
-"0","autoplot(forecast(Total_tbats, h=72))+"
-"0","  coord_cartesian(xlim = c(nrow(Casual)-720, nrow(Casual)+72))"
-"0",""

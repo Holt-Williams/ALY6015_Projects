@@ -1,1 +1,0 @@
-{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"auto.arima(stationaryWINE)","line_number":0},{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"as.ts(x)","line_number":0}],"message":"Error in as.ts(x) : object 'stationaryWINE' not found\n"}

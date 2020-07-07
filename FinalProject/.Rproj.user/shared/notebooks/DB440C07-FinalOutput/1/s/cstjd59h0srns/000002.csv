@@ -1,8 +1,0 @@
-"0","hour%>%group_by(dteday)%>%mutate(sum=sum(cnt),reg=sum(registered), cas=sum(casual))%>%ggplot()+"
-"0","  geom_line(aes(x=dteday, y=reg, color=""red""))+"
-"0","  geom_line(aes(x=dteday, y=cas, color=""Blue""))+"
-"0","  scale_x_date(date_labels=""%Y %b %d"","
-"0","               limit=c(as.Date(""2012-01-01""),as.Date(""2013-01-01"")))+"
-"0","  theme_tufte()+"
-"0","  xlab(""Time"")+"
-"0","  ylab(""Ridership"")"

@@ -1,3 +1,0 @@
-"0","wine_autoArima<-auto.arima(stationaryWINE)"
-"2","Error in as.ts(x) : object 'stationaryWINE' not found
-"

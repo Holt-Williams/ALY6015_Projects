@@ -1,5 +1,0 @@
-"0","knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height = 7)"
-"0","library(printr)"
-"2","package ‘printr’ was built under R version 3.6.3"
-"0","library(ggthemes)"
-"2","package ‘ggthemes’ was built under R version 3.6.3"

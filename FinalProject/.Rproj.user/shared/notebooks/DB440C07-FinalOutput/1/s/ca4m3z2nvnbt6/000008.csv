@@ -1,3 +1,0 @@
-"0","hour[2:17]%>%"
-"0","  describe(quant=c(.25,.75),omit=TRUE)%>%"
-"0","  select(n, sd,mean, median, min, max, Q0.25, Q0.75)%>%round(digits=2)"

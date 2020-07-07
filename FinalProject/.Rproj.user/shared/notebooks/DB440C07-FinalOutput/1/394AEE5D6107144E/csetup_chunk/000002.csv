@@ -1,9 +1,0 @@
-"0","knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height = 7)"
-"0","library(printr)"
-"2","package ‘printr’ was built under R version 3.6.3"
-"2","Registered S3 method overwritten by 'printr':
-  method                from     
-  knit_print.data.frame rmarkdown
-"
-"0","library(ggthemes)"
-"2","package ‘ggthemes’ was built under R version 3.6.3"

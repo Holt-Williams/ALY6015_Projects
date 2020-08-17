@@ -8,7 +8,7 @@ M2: Hypothesis Testing
 
 M3: Regularization, mostly LASSO
 
-M4: Data Minning
+M4: Data Minning, Classification: Decision Tree, Kmeans, Density Based Clustering, PCA
 
 M5: Time Series Analysis, ARIMA/autoARIMA()
 
